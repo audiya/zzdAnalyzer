@@ -55,12 +55,13 @@ void SigBckStack(){
   hs->Draw("HIST");
   hs->GetXaxis()->SetTitle("mass of zd (4mu channel)");
   hs->GetYaxis()->SetTitle("Number of Events");
-  hs->GetYaxis()->SetRangeUser(0, 100000);
-
-  hs->Draw("HIST");
   
-  hs->SetMaximum(h_bkg_zz4lep->GetMaximum()*2);
-  hs->SetMaximum(h_bkg_pph4l->GetMaximum()*2);
+  printf("GlobalMaximum: %f\n",hs->GetMaximum());
+  
+  TH1 *h = ((TH1*)(hs->GetStack()->Last()));
+  
+  h->GetXaxis()->SetRangeUser(0,100000);
+  printf("LocalMaximum: %f\n",h->GetMaximum());
     
   c->SaveAs("mZb_4mu_zd60.png");
 }
