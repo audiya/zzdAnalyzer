@@ -62,6 +62,15 @@ void SigBckStack(){
   
   h->GetXaxis()->SetRangeUser(0,100000);
   printf("LocalMaximum: %f\n",h->GetMaximum());
+  
+  TLegend *leg = new TLegend(0.9,0.7,0.7,0.9);
+  //(plg hujung x dekat 0,lebar dekat xaxis dr 0,lebar dekat yaxis dr 0,atasbawah on y axis)
+  // dia count dr 0-1
+  leg->SetHeader("Sample");
+  leg->AddEntry("h_sig","signal","f");
+  leg->AddEntry("h_bkg_zz4lep","zz4l","f");
+  leg->AddEntry("h_bkg_pph4l","pph4l","f");
+  leg->Draw();
     
   c->SaveAs("mZb_4mu_zd60.png");
 }
