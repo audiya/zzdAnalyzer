@@ -29,45 +29,77 @@ void SigBckStack(){
   TH1F *h_bkg_zz4lep = (TH1F*)f_bkg_zz4lep->Get("mZb_4mu")->Clone("h_bkg_zz4lep");
   TH1F *h_bkg_pph4l = (TH1F*)f_bkg_pph4l->Get("mZb_4mu")->Clone("h_bkg_pph4l");
 
-  float lumi = 250;
-
-  float ntot_sig = 25000;
-  float ntot_bkg_zz4lep = 25000;
-  float ntot_bkg_pph4l = 25000;
+  //250fb-1 = 250000pb
+  float lumi = 250000;
+  float lumi = 250000;
+  double nevents = 25000;
+  double backevents = 500000;
+  double BR_SMHiggs = 1.25e-4;
+  double xs = 48.58;
+  double ATLASUP = 0.01;
+  //based on ATLAS CL upper limit = 10e-3
     
-  h_sig->Scale(ntot_sig/lumi);
-    cout << "Signal cross section " << ntot_sig/lumi << endl;
-  h_bkg_zz4lep->Scale(ntot_bkg_zz4lep/lumi);
-    cout << "Bkg_zz4lep cross section " << ntot_bkg_zz4lep/lumi << endl;
-  h_bkg_pph4l->Scale(ntot_bkg_pph4l/lumi);
-  cout << "Bkg_pph4l cross section " << ntot_bkg_pph4l/lumi << endl;
+  // normalize using scale to SM Higgs crossection & BR (total events 25k)
+    double h = xs*ATLASUP*BR_SMHiggs*lumi/nevents;
+    cout << "h =" << h << ".\n";
     
-  TCanvas *c = new TCanvas("c","c");
+    double back = xs*ATLASUP*BR_SMHiggs*lumi/backevents;
+    cout << "back =" << back << ".\n";
   
-  h_sig->SetFillColor(kRed);
-  h_bkg_zz4lep->SetFillColor(kGreen);
-  h_bkg_pph4l->SetFillColor(kBlue);
+    h_sig20->Scale(h);
+    h_sig40->Scale(h);
+    h_sig60->Scale(h);
+    h_bkg_pph4l->Scale(back);
+    h_bkg_zz4lep->Scale(back);
     
-  THStack *hs = new THStack("hs", "zd mass");
+    /*h_sig20->Scale(h/h_sig20->Integral(h_sig20->FindFixBin(15.), h_sig20->FindFixBin(120.)));
+    h_sig40->Scale(h/h_sig40->Integral(h_sig40->FindFixBin(15.), h_sig40->FindFixBin(120.)));
+    h_sig60->Scale(h/h_sig60->Integral(h_sig60->FindFixBin(15.), h_sig60->FindFixBin(120.)));
+    h_bkg_zz4lep->Scale(back/h_bkg_zz4lep->Integral(h_bkg_zz4lep->FindFixBin(15.), h_bkg_zz4lep->FindFixBin(120.)));
+    h_bkg_pph4l->Scale(back/h_bkg_pph4l->Integral(h_bkg_pph4l->FindFixBin(15.), h_bkg_pph4l->FindFixBin(120.)));*/
+    
+     double nsig20_AFTER = h_sig20->Integral(h_sig20->FindFixBin(15.), h_sig20->FindFixBin(120.));
+     cout << "signal_20_4e nevent AFTER Normalization is = " << nsig20_AFTER << ".\n";
+     
+     double nsig40_AFTER = h_sig40->Integral(h_sig40->FindFixBin(15.), h_sig40->FindFixBin(120.));
+     cout << "signal_40_4e nevent AFTER Normalization is = " << nsig40_AFTER << ".\n";
+     
+     double nsig60_AFTER = h_sig60->Integral(h_sig60->FindFixBin(15.), h_sig60->FindFixBin(120.));
+     cout << "signal_60_4e nevent AFTER Normalization is = " << nsig60_AFTER << ".\n";
+     
+     double nbkg_zz4lepAFTER = h_bkg_zz4lep->Integral(h_bkg_zz4lep->FindFixBin(15.), h_bkg_zz4lep->FindFixBin(120.));
+     cout << "zz4lep nevent AFTER Normalization is = " << nbkg_zz4lepAFTER << ".\n";
+     
+     double nbkg_pph4lAFTER = h_bkg_pph4l->Integral(h_bkg_pph4l->FindFixBin(15.), h_bkg_pph4l->FindFixBin(120.));
+     cout << "pph4lep nevent AFTER Normalization is = " << nbkg_pph4lAFTER << ".\n";
+    
+  //stack normalized samples
+  TCanvas *c = new TCanvas("c","c");
+  h_sig20->SetFillColor(kMagenta-9);
+  h_sig40->SetFillColor(kCyan-9);
+  h_sig60->SetFillColor(kYellow-9);
+  h_bkg_zz4lep->SetFillColor(kBlue+2);
+  h_bkg_pph4l->SetFillColor(kRed+1);
+
+    
+ THStack *hs = new THStack("hs", "z_{b} mass");
+  hs->Add(h_sig20);
+  hs->Add(h_sig40);
+  hs->Add(h_sig60);
   hs->Add(h_bkg_zz4lep);
   hs->Add(h_bkg_pph4l);
-  hs->Add(h_sig);
   hs->Draw("HIST");
-  hs->GetXaxis()->SetTitle("mass of zd (4mu channel)");
+  hs->GetXaxis()->SetTitle("mass of z_{b} (4e channel)");
   hs->GetYaxis()->SetTitle("Number of Events");
-  
-  printf("GlobalMaximum: %f\n",hs->GetMaximum());
-  
-  TH1 *h = ((TH1*)(hs->GetStack()->Last()));
-  
-  h->GetXaxis()->SetRangeUser(0,100000);
-  printf("LocalMaximum: %f\n",h->GetMaximum());
+  hs->GetXaxis()->SetRangeUser(12,80);
   
   TLegend *leg = new TLegend(0.9,0.7,0.7,0.9);
   //(plg hujung x dekat 0,lebar dekat xaxis dr 0,lebar dekat yaxis dr 0,atasbawah on y axis)
   // dia count dr 0-1
   leg->SetHeader("Sample");
-  leg->AddEntry("h_sig","signal","f");
+  leg->AddEntry("h_sig20","mZ_{b} = 20GeV","f");
+  leg->AddEntry("h_sig40","mZ_{b} = 40GeV","f");
+  leg->AddEntry("h_sig60","mZ_{b} = 60GeV","f");
   leg->AddEntry("h_bkg_zz4lep","zz4l","f");
   leg->AddEntry("h_bkg_pph4l","pph4l","f");
   leg->Draw();
